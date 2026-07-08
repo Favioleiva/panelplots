@@ -16,13 +16,13 @@ Large panel datasets are hard to visualize well. Plotting every unit can reveal 
 After creating a public GitHub repository, users can install the package directly with:
 
 ```bash
-pip install git+https://github.com/YOUR_USERNAME/panelplots.git
+pip install git+https://github.com/Favioleiva/panelplots.git
 ```
 
 For local development:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/panelplots.git
+git clone https://github.com/Favioleiva/panelplots.git
 cd panelplots
 pip install -e .
 ```
