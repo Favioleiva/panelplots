@@ -15,6 +15,21 @@ from .style import set_academic_style
 from .transforms import apply_transform
 from .utils import apply_time_axis, apply_y_axis, maybe_make_parent, normalize_time_column, resolve_time_frequency, validate_columns
 
+def _per_unit(value, unit_id, name):
+    """Resolve a scalar-or-dict styling parameter for a single unit."""
+    if isinstance(value, dict):
+        try:
+            return value[unit_id]
+        except KeyError:
+            raise KeyError(
+                f"unit {unit_id!r} missing from {name}. "
+                f"Provide a value for every unit, or pass a scalar."
+            ) from None
+    return value
+
+def _coerce(d):
+    """Coerce mapping keys to str, matching the plotted unit ids."""
+    return {str(k): v for k, v in d.items()} if isinstance(d, dict) else d
 
 def plot_spaghetti(
     df: pd.DataFrame,
@@ -31,8 +46,9 @@ def plot_spaghetti(
     random_state: int = 2026,
     color_by_mean: bool = True,
     unit_cmap: str = "plasma",
-    unit_alpha: float = 0.10,
-    unit_linewidth: float = 0.55,
+    unit_colors: dict | None = None,
+    unit_alpha: float | dict = 0.10,
+    unit_linewidth: float | dict = 0.55,
     mean_line: bool = True,
     mean_label: str | None = None,
     mean_color: str = "#C2185B",
@@ -70,6 +86,13 @@ def plot_spaghetti(
         unique units.
     max_units:
         Optional random subsample of units. Use ``None`` to plot all units.
+    unit_colors:
+        Optional mapping ``{unit_id: color}``. When provided it overrides
+        ``color_by_mean`` and ``unit_cmap``. Keys are coerced to ``str``.
+        Raises ``KeyError`` if a plotted unit is absent from the mapping.
+    unit_alpha, unit_linewidth:
+        Scalar applied to all units, or a mapping ``{unit_id: value}``
+        following the same rules as ``unit_colors``.
     output_path:
         Optional path to save the figure.
     return_data:
@@ -122,6 +145,10 @@ def plot_spaghetti(
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
 
+    unit_colors = _coerce(unit_colors)
+    unit_alpha = _coerce(unit_alpha)
+    unit_linewidth = _coerce(unit_linewidth)
+
     cmap = plt.get_cmap(unit_cmap)
     if color_by_mean:
         unit_order = (
@@ -141,13 +168,18 @@ def plot_spaghetti(
 
     for unit_id, group in plot_df.groupby(unit, sort=False):
         group = group.sort_values(time)
+        if unit_colors is not None:
+            color = _per_unit(unit_colors, unit_id, "unit_colors")
+        else:
+            color = color_map.get(unit_id, cmap(0.55))
         ax.plot(
             group[time],
             group[y_plot],
-            color=color_map.get(unit_id, cmap(0.55)),
-            linewidth=unit_linewidth,
-            alpha=unit_alpha,
+            color=color,
+            linewidth=_per_unit(unit_linewidth, unit_id, "unit_linewidth"),
+            alpha=_per_unit(unit_alpha, unit_id, "unit_alpha"),
             zorder=1,
+            label=f"_unit_{unit_id}",
         )
 
     if mean_line:
