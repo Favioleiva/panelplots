@@ -113,7 +113,6 @@ def plot_fanchart(
     year_tick_base: int = 2,
     grid: bool = True,
     legend: bool = True,
-    legend_labels: tuple[str, str, str] = ("Lower deciles", "Middle deciles", "Upper deciles"),
     output_path: str | Path | None = None,
     output_formats: list[str] | None = None,
     stats_output_path: str | Path | None = None,
@@ -241,34 +240,34 @@ def plot_fanchart(
         spine.set_color("#222222")
 
     if legend:
-    legend_handles = []
+        legend_handles = []
 
-    for i, ((lower_col, upper_col), color) in enumerate(
-        zip(bands, band_colors),
-        start=1,
-    ):
-        lower_q = int(round(quantiles[i - 1] * 100))
-        upper_q = int(round(quantiles[i] * 100))
+        for i, ((lower_col, upper_col), color) in enumerate(
+            zip(bands, band_colors),
+            start=1,
+        ):
+            lower_q = int(round(quantiles[i - 1] * 100))
+            upper_q = int(round(quantiles[i] * 100))
 
-        legend_handles.append(
-            Patch(
-                facecolor=color,
-                edgecolor="none",
-                alpha=band_alpha,
-                label=f"D{i}: p{lower_q:02d}–p{upper_q:02d}",
+            legend_handles.append(
+                Patch(
+                    facecolor=color,
+                    edgecolor="none",
+                    alpha=band_alpha,
+                    label=f"D{i}: p{lower_q:02d}–p{upper_q:02d}",
+                )
             )
-        )
 
-    ax.legend(
-        handles=legend_handles,
-        loc="upper left",
-        frameon=False,
-        fontsize=12,
-        ncol=5,
-        columnspacing=1.2,
-        handlelength=1.5,
-        handletextpad=0.5,
-    )
+        ax.legend(
+            handles=legend_handles,
+            loc="upper left",
+            frameon=False,
+            fontsize=12,
+            ncol=5,
+            columnspacing=1.2,
+            handlelength=1.5,
+            handletextpad=0.5,
+        )
 
     fig.tight_layout()
 
