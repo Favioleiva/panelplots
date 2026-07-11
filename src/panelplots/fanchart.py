@@ -240,24 +240,35 @@ def plot_fanchart(
         spine.set_linewidth(0.9)
         spine.set_color("#222222")
 
-    if legend and len(bands) >= 3:
-        lower_color = band_colors[min(1, len(band_colors) - 1)]
-        middle_color = band_colors[len(band_colors) // 2]
-        upper_color = band_colors[-2 if len(band_colors) > 1 else -1]
-        legend_handles = [
-            Patch(facecolor=lower_color, edgecolor="none", alpha=band_alpha, label=legend_labels[0]),
-            Patch(facecolor=middle_color, edgecolor="none", alpha=band_alpha, label=legend_labels[1]),
-            Patch(facecolor=upper_color, edgecolor="none", alpha=band_alpha, label=legend_labels[2]),
-        ]
-        ax.legend(
-            handles=legend_handles,
-            loc="upper left",
-            frameon=False,
-            fontsize=16,
-            ncol=3,
-            columnspacing=1.5,
-            handlelength=1.8,
+    if legend:
+    legend_handles = []
+
+    for i, ((lower_col, upper_col), color) in enumerate(
+        zip(bands, band_colors),
+        start=1,
+    ):
+        lower_q = int(round(quantiles[i - 1] * 100))
+        upper_q = int(round(quantiles[i] * 100))
+
+        legend_handles.append(
+            Patch(
+                facecolor=color,
+                edgecolor="none",
+                alpha=band_alpha,
+                label=f"D{i}: p{lower_q:02d}–p{upper_q:02d}",
+            )
         )
+
+    ax.legend(
+        handles=legend_handles,
+        loc="upper left",
+        frameon=False,
+        fontsize=12,
+        ncol=5,
+        columnspacing=1.2,
+        handlelength=1.5,
+        handletextpad=0.5,
+    )
 
     fig.tight_layout()
 
